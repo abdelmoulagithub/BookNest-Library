@@ -8,25 +8,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/livres")
-// 7AYAD @CrossOrigin men hna - rah SecurityConfig ghadi ydirha
 public class LivreController {
 
     @Autowired
     private LivreService livreService;
 
-    // FIX: Had endpoint khassou yb9a simple List bach maydirch WARN o Network Error
     @GetMapping
     public ResponseEntity<List<Livre>> getAllLivres() {
-        List<Livre> livres = livreService.getAllLivres();
-        return ResponseEntity.ok(livres);
+        return ResponseEntity.ok(livreService.getAllLivres());
     }
 
-    // Pagination ila bghitiha f Admin
     @GetMapping("/paginated")
-    public ResponseEntity<?> getAllPaginated(
+    public ResponseEntity<org.springframework.data.domain.Page<Livre>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search) {
@@ -39,24 +36,34 @@ public class LivreController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getLivreById(@PathVariable Long id) {
+    public ResponseEntity<Livre> getLivreById(@PathVariable Long id) {
         return livreService.getLivreById(id)
-                .map(ResponseEntity::ok)
+                .map(livre -> ResponseEntity.ok(livre))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<?> addLivre(@RequestBody LivreDTO dto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(livreService.addLivre(dto));
+            Livre saved = livreService.addLivre(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateLivre(@PathVariable Long id, @RequestBody LivreDTO dto) {
+        try {
+            return ResponseEntity.ok(livreService.updateLivre(id, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteLivre(@PathVariable Long id) {
         livreService.deleteLivre(id);
-        return ResponseEntity.ok("Supprimé");
+        return ResponseEntity.ok(Map.of("message", "Supprimé"));
     }
 }

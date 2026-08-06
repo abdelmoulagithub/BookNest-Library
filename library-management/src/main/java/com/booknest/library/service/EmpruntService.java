@@ -28,8 +28,15 @@ public class EmpruntService {
         Livre livre = livreRepository.findById(livreId)
                 .orElseThrow(() -> new RuntimeException("Livre non trouvé"));
 
-        if (livre.getNombreExemplaires() <= 0) {
-            throw new RuntimeException("Stock épuisé");
+        // 1️⃣ FIX: User ma yakhodch nafs lktab 2 marat
+        boolean deja = empruntRepository.existsByUserIdAndLivreIdAndRetourneFalse(userId, livreId);
+        if (deja) {
+            throw new RuntimeException("Vous avez déjà ce livre en cours d'emprunt !");
+        }
+
+        // 2️⃣ FIX: Stock + dispo logic
+        if (livre.getNombreExemplaires() <= 0 || !livre.isDisponible()) {
+            throw new RuntimeException("Stock épuisé - Livre non disponible");
         }
 
         Emprunt emprunt = new Emprunt();
@@ -42,7 +49,11 @@ public class EmpruntService {
         emprunt.setPenalite(0.0);
         emprunt.setJoursRetard(0L);
 
+        // -1 stock + dispo auto 3la 7sab stock
         livre.setNombreExemplaires(livre.getNombreExemplaires() - 1);
+        if (livre.getNombreExemplaires() == 0) {
+            livre.setDisponible(false);
+        }
         livreRepository.save(livre);
 
         return empruntRepository.save(emprunt);
@@ -72,20 +83,17 @@ public class EmpruntService {
             emprunt.setStatut("RETOURNE");
         }
 
+        // +1 stock + dispo ywli true auto
         Livre livre = emprunt.getLivre();
         livre.setNombreExemplaires(livre.getNombreExemplaires() + 1);
+        livre.setDisponible(true); // rje3 kayban
         livreRepository.save(livre);
 
         return empruntRepository.save(emprunt);
     }
 
-    public List<Emprunt> getAllEmprunts() {
-        return empruntRepository.findAll();
-    }
-
-    public List<Emprunt> getEmpruntsByUser(Long userId) {
-        return empruntRepository.findByUserId(userId);
-    }
+    public List<Emprunt> getAllEmprunts() { return empruntRepository.findAll(); }
+    public List<Emprunt> getEmpruntsByUser(Long userId) { return empruntRepository.findByUserId(userId); }
 
     public List<Emprunt> getAllRetards() {
         LocalDate now = LocalDate.now();

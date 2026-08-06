@@ -23,6 +23,8 @@ public class User {
     public User() {
     }
 
+
+
     // Constructor
     public User(String name, String email, String password, String role) {
         this.name = name;

@@ -14,19 +14,29 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(''); setLoading(true);
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Email ou mot de passe incorrect');
-    } finally { setLoading(false); }
-  };
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError(''); setLoading(true);
+  try {
+    const res = await api.post('/auth/login', { email, password });
+    const user = res.data.user;
 
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('role', user.role);
+
+    if(user.role === 'ADMIN'){
+      window.location.replace('/admin');
+    } else {
+      window.location.replace('/user/catalogue');
+    }
+
+  } catch (err) {
+    setError(err.response?.data || 'Email ou mot de passe incorrect');
+  } finally { 
+    setLoading(false); 
+  }
+};
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', p: 2 }}>
       <Paper elevation={24} sx={{ width: 400, p: 4.5, borderRadius: 5, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>

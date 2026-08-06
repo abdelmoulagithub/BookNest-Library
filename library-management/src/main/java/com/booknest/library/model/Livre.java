@@ -22,6 +22,8 @@ public class Livre {
     @Column
     private String genre;
 
+
+    @Column(name="disponible")
     private boolean disponible = true;
 
     // Default Constructor

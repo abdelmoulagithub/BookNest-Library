@@ -64,7 +64,7 @@ export default function Catalogue() {
         return;
       }
 
-      const payload = { userId: user.id, livreId: livre.id };
+    const payload = { user_id: user.id, livre_id: livre.id };
       await api.post('/emprunts', payload);
 
       setLivres(prev =>

@@ -9,16 +9,9 @@ import java.util.List;
 
 @Repository
 public interface LivreRepository extends JpaRepository<Livre, Long> {
-
-    // ============ SIMPLE SEARCH ============
-    List<Livre> findByTitreContainingIgnoreCase(String titre);
-
-    List<Livre> findByAuteurContainingIgnoreCase(String auteur);
-
+    boolean existsByIsbn(String isbn);
     List<Livre> findByDisponibleTrue();
-
-    // ============ PAGINATION + SEARCH GLOBAL ============
-    // Kat9lb f titre WLA auteur
-    Page<Livre> findByTitreContainingIgnoreCaseOrAuteurContainingIgnoreCase(
-            String titre, String auteur, Pageable pageable);
+    List<Livre> findByTitreContainingIgnoreCase(String titre);
+    List<Livre> findByAuteurContainingIgnoreCase(String auteur);
+    Page<Livre> findByTitreContainingIgnoreCaseOrAuteurContainingIgnoreCase(String titre, String auteur, Pageable pageable);
 }

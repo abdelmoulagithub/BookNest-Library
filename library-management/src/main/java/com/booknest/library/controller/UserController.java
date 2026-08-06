@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map; // <-- ZID HADI BACH Y7AL ERROR MAP
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users") // /api/users/...
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
@@ -21,12 +22,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // GET /api/users → Jib ga3 users - Ghi ADMIN mn b3d
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         List<User> users = userRepository.findAll();
-
-        // N7awlo List<User> → List<UserResponseDTO> bla password
         List<UserResponseDTO> dtos = users.stream()
                 .map(user -> {
                     UserResponseDTO dto = new UserResponseDTO();
@@ -37,21 +35,17 @@ public class UserController {
                     return dto;
                 })
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(dtos);
     }
 
-    // GET /api/users/5 → Jib user wa7d
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User ma kaynch"));
-
         UserResponseDTO dto = userService.convertToResponseDTO(user);
         return ResponseEntity.ok(dto);
     }
 
-    // DELETE /api/users/5 → Msa7 user - Ghi ADMIN
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
@@ -61,10 +55,20 @@ public class UserController {
         return ResponseEntity.ok("User tms7 a sata");
     }
 
-    // GET /api/users/count → Ch7al mn user kayn
     @GetMapping("/count")
     public ResponseEntity<Long> countUsers() {
         long count = userRepository.count();
         return ResponseEntity.ok(count);
+    }
+
+    // === JDID - BACH T9DER TBDL ROLE BLA MA TZID COLUMN ===
+    @PutMapping("/{id}/role")
+    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User ma kaynch"));
+        String newRole = body.get("role");
+        user.setRole(newRole);
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of("message", "Role tbdel l " + newRole));
     }
 }
