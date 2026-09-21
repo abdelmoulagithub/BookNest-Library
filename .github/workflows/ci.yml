@@ -1,0 +1,52 @@
+name: BookNest CI - Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # JOB 1 : Teste le Frontend
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./library-frontend
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: library-frontend/package-lock.json
+
+      - name: Install Front
+        run: npm ci
+
+      - name: Build Front (verifie qu'il compile)
+        run: npm run build --if-present
+
+      - name: Tests Front
+        run: npm test --if-present
+
+  # JOB 2 : Teste le Backend
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./library-management
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Tests Back
+        run: mvn test
+        # Si ton back est en Gradle, remplace par : ./gradlew test
